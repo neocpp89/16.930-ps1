@@ -7,15 +7,16 @@ from scipy.sparse.linalg import spsolve
 
 left = 0
 right = 1
-Ne = 4
+Ne = 1000
 h = (right - left) / Ne
 
-nu = 1
+nu = 1e-2
 b = 0
-c = 0
+c = 1.0
 g0 = 0
 g1 = 1
-f = lambda x: x ** 2
+# f = lambda x: x ** 2
+f = lambda x: 0
 
 X = np.linspace(left, right, Ne+1)
 H = np.diff(X)
@@ -47,15 +48,15 @@ for elidx, el in enumerate(Elements):
         phi_i = el.phi(i)
         gradphi_i = el.gradphi(i)
         T = el.T
-        load = el.integrate_f(lambda x: phi_i(T(x))*f(x), 2)
+        load = el.integrate(lambda x: phi_i(T(x))*f(x), 2)
         print load
         glob_i = int(ConnectivityMatrix[elidx][i])
         F[glob_i] += load
         for j in range(0, order+1):
             phi_j = el.phi(j)
             gradphi_j = el.gradphi(j)
-            k = el.integrate_f(lambda x: phi_i(T(x))*b*phi_j(T(x)))
-            k += -el.integrate_f(lambda x: gradphi_i(T(x))*el.jacobian(x)*(c - nu*gradphi_j(T(x))*el.jacobian(x)))
+            k = el.integrate(lambda x: phi_i(T(x))*b*phi_j(T(x)))
+            k += -el.integrate(lambda x: gradphi_i(T(x))*el.jacobian(x)*(c*phi_j(T(x)) - nu*gradphi_j(T(x))*el.jacobian(x)))
             glob_j = int(ConnectivityMatrix[elidx][j])
             I[coo_idx] = glob_i 
             J[coo_idx] = glob_j
@@ -74,7 +75,7 @@ I[coo_idx] = left_flux_idx
 J[coo_idx] = left_bc_idx
 K[coo_idx] = -lambda_left
 coo_idx += 1
-F[left_flux_idx] = lambda_left*g0
+F[left_flux_idx] = -lambda_left*g0
 
 right_bc_idx = ConnectivityMatrix[Ne-1][1]
 right_flux_idx = Ne+2
@@ -89,14 +90,18 @@ coo_idx += 1
 F[right_flux_idx] = lambda_right*g1
 
 Kmat = sps.coo_matrix((K, (I, J)), shape=(Ndof, Ndof)).tocsc()
-print Kmat.todense()
-print F
+# print Kmat.todense()
+# print F
 v = spsolve(Kmat, F)
-print v
-print Kmat * v
+# print v
+# print Kmat * v
 
 # pylab.plot(np.linspace(0,1,Ndof), F)
+# pylab.plot(np.linspace(0,1), map(lambda x: (-x ** 4 + 13*x) / 12.0 , np.linspace(0,1)), linewidth=3.0, color='orange')
+# char_root = np.sqrt(b / nu)
+# pylab.plot(np.linspace(0,1,400), map(lambda x: np.sinh(char_root * x) / np.sinh(char_root) , np.linspace(0,1,400)))
+char_root = c / nu
+pylab.plot(np.linspace(0,1,400), map(lambda x: (1.0 - np.exp(char_root * x)) / (1.0 - np.exp(char_root)) , np.linspace(0,1,400)))
 pylab.plot(X, v[0:Ne+1])
-pylab.plot(np.linspace(0,1), map(lambda x: (-x ** 4 + 13*x) / 12.0 , np.linspace(0,1)))
 pylab.savefig("foo.png")
 
