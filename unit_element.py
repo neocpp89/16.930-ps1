@@ -71,6 +71,15 @@ class Test_CDR_Linear_1D(unittest.TestCase):
         self.assertAlmostEqual(K[1,1], 1.0/12.0)
         return
 
+    def test_stiffness_reaction(self):
+        el = ConvectionDiffusionReactionElement.Linear_1D(0, 0.25, 0, 0, 1);
+        K = el.stiffness_matrix()
+        self.assertAlmostEqual(K[0,0], 0.5)
+        self.assertAlmostEqual(K[0,1], 0.5)
+        self.assertAlmostEqual(K[1,0], -0.5)
+        self.assertAlmostEqual(K[1,1], -0.5)
+        return
+
     def test_load(self):
         el = ConvectionDiffusionReactionElement.Linear_1D(0, 0.25, 1, 0, 0);
         F = el.load_vector(lambda x: x ** 2)

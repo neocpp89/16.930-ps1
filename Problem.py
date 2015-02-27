@@ -1,13 +1,24 @@
 #!/usr/bin/env python
 import Element
+import ConvectionDiffusionReactionElement
 import numpy as np
 import pylab
 import scipy.sparse as sps
 from scipy.sparse.linalg import spsolve
 
+'''
+from multiprocessing import Pool
+
+def elk(el):
+    return el.stiffness_matrix()
+
+def elf(el):
+    return el.load_vector(lambda x: 0)
+'''
+
 left = 0
 right = 1
-Ne = 1000
+Ne = 40
 h = (right - left) / Ne
 
 nu = 1e-2
@@ -36,31 +47,29 @@ coo_idx = 0
 
 # Create triangulation
 for i in range(0, Ne):
-    Elements[i] = Element.Linear_1D(X[i], X[i+1])
-    print Elements[i]
+    Elements[i] = ConvectionDiffusionReactionElement.Linear_1D_VMS(X[i], X[i+1], nu, b ,c)
     for j in range(0, order+1):
         ConnectivityMatrix[i, j] = ConnectivityFunction(i, j)
-    print ConnectivityMatrix[i, :]
 
-# Assemble stiffness matrix
+# p = Pool(4)
+# K_els = p.map(elk, Elements)
+# F_els = p.map(elf, Elements)
+
+# Assemble elemental stiffness matrices
+print "Calculating Elemental Stiffness..."
 for elidx, el in enumerate(Elements):
+    K_el = el.stiffness_matrix()
+    F_el = el.load_vector(f)
+    # K_el = K_els[elidx]
+    # F_el = F_els[elidx]
     for i in range(0, order+1):
-        phi_i = el.phi(i)
-        gradphi_i = el.gradphi(i)
-        T = el.T
-        load = el.integrate(lambda x: phi_i(T(x))*f(x), 2)
-        print load
         glob_i = int(ConnectivityMatrix[elidx][i])
-        F[glob_i] += load
+        F[glob_i] += F_el[i]
         for j in range(0, order+1):
-            phi_j = el.phi(j)
-            gradphi_j = el.gradphi(j)
-            k = el.integrate(lambda x: phi_i(T(x))*b*phi_j(T(x)))
-            k += -el.integrate(lambda x: gradphi_i(T(x))*el.jacobian(x)*(c*phi_j(T(x)) - nu*gradphi_j(T(x))*el.jacobian(x)))
             glob_j = int(ConnectivityMatrix[elidx][j])
             I[coo_idx] = glob_i 
             J[coo_idx] = glob_j
-            K[coo_idx] = k
+            K[coo_idx] = K_el[i,j]
             coo_idx += 1
 
 # Apply boundary conditions
@@ -89,12 +98,11 @@ K[coo_idx] = lambda_right
 coo_idx += 1
 F[right_flux_idx] = lambda_right*g1
 
+# Assemble global stiffness matrix and solve system
+print "Assembling Global Stiffness..."
 Kmat = sps.coo_matrix((K, (I, J)), shape=(Ndof, Ndof)).tocsc()
-# print Kmat.todense()
-# print F
+print "Solving Matrix..."
 v = spsolve(Kmat, F)
-# print v
-# print Kmat * v
 
 # pylab.plot(np.linspace(0,1,Ndof), F)
 # pylab.plot(np.linspace(0,1), map(lambda x: (-x ** 4 + 13*x) / 12.0 , np.linspace(0,1)), linewidth=3.0, color='orange')
@@ -103,5 +111,7 @@ v = spsolve(Kmat, F)
 char_root = c / nu
 pylab.plot(np.linspace(0,1,400), map(lambda x: (1.0 - np.exp(char_root * x)) / (1.0 - np.exp(char_root)) , np.linspace(0,1,400)))
 pylab.plot(X, v[0:Ne+1])
+print "Writing plots..."
 pylab.savefig("foo.png")
+print "Done."
 
