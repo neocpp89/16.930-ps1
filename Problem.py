@@ -34,8 +34,8 @@ H = np.diff(X)
 Elements = [0]*(Ne)
 
 order = 1
-ConnectivityFunction = lambda element_idx, local_node_idx: (order)*element_idx + local_node_idx
-ConnectivityMatrix = np.empty([Ne, 2])
+ConnectivityFunction = lambda element_idx, local_node_idx: int((order)*element_idx + local_node_idx)
+ConnectivityMatrix = np.empty([Ne, 2], dtype=np.int_)
 BoundaryFluxDOFs = [Ne+1, Ne+2]
 Ndof = Ne+3
 
@@ -106,11 +106,16 @@ v = spsolve(Kmat, F)
 
 # pylab.plot(np.linspace(0,1,Ndof), F)
 # pylab.plot(np.linspace(0,1), map(lambda x: (-x ** 4 + 13*x) / 12.0 , np.linspace(0,1)), linewidth=3.0, color='orange')
+
 # char_root = np.sqrt(b / nu)
 # pylab.plot(np.linspace(0,1,400), map(lambda x: np.sinh(char_root * x) / np.sinh(char_root) , np.linspace(0,1,400)))
-char_root = c / nu
-pylab.plot(np.linspace(0,1,400), map(lambda x: (1.0 - np.exp(char_root * x)) / (1.0 - np.exp(char_root)) , np.linspace(0,1,400)))
-pylab.plot(X, v[0:Ne+1])
+
+# char_root = c / nu
+# pylab.plot(np.linspace(0,1,400), map(lambda x: (1.0 - np.exp(char_root * x)) / (1.0 - np.exp(char_root)) , np.linspace(0,1,400)))
+for elidx, el in enumerate(Elements):
+    Xel,Yel = el.interpxy(v[ConnectivityMatrix[elidx,:]])
+    pylab.plot(Xel, Yel)
+# pylab.plot(X, v[0:Ne+1])
 print "Writing plots..."
 pylab.savefig("foo.png")
 print "Done."
