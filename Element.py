@@ -119,3 +119,17 @@ class Linear_1D(_1D):
 
     def __repr__(self):
         return "x = (" + str(self.x0) + ',' + str(self.x1) + ")"
+
+class Cubic_1D(_1D):
+    def __init__(self, x0, x1):
+        _1D.__init__(self, x0, x1, 3)
+        return
+
+    def integrate(self, f, order_hint=10):
+        return self.integrate_on_master(lambda xi: f(self.T_inv(xi))/self.jacobian(self.T_inv(xi)), order_hint)
+
+    def integrate_on_master(self, f, order_hint=10):
+        return gauss.quadrature(lambda xi: f(xi), -1, 1, order_hint)
+
+    def __repr__(self):
+        return "x = (" + str(self.x0) + ',' + str(self.x1) + ")"

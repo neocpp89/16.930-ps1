@@ -18,36 +18,36 @@ def elf(el):
 
 left = 0
 right = 1
-Ne = 40
+Ne = 10
 h = (right - left) / Ne
 
-nu = 1e-2
-b = 0
-c = 1.0
+nu = 1
+b = 0.0
+c = 0.0
 g0 = 0
 g1 = 1
-# f = lambda x: x ** 2
-f = lambda x: 0
+f = lambda x: x ** 2
+# f = lambda x: 0
 
 X = np.linspace(left, right, Ne+1)
 H = np.diff(X)
 Elements = [0]*(Ne)
 
-order = 1
-ConnectivityFunction = lambda element_idx, local_node_idx: int((order)*element_idx + local_node_idx)
-ConnectivityMatrix = np.empty([Ne, 2], dtype=np.int_)
-BoundaryFluxDOFs = [Ne+1, Ne+2]
-Ndof = Ne+3
+order = 3
+ConnectivityFunction = lambda element_idx, local_node_idx: int((order*element_idx) + local_node_idx)
+ConnectivityMatrix = np.empty([Ne, order+1], dtype=np.int_)
+BoundaryFluxDOFs = [(order*Ne)+1, (order*Ne)+2]
+Ndof = order*Ne+3
 
-I = np.zeros([(2+Ndof)*(order+1)**2])
-J = np.zeros([(2+Ndof)*(order+1)**2])
-K = np.zeros([(2+Ndof)*(order+1)**2])
+I = np.zeros([Ndof*(order+1)**2])
+J = np.zeros([Ndof*(order+1)**2])
+K = np.zeros([Ndof*(order+1)**2])
 F = np.zeros([Ndof, 1])
 coo_idx = 0
 
 # Create triangulation
 for i in range(0, Ne):
-    Elements[i] = ConvectionDiffusionReactionElement.Linear_1D_VMS(X[i], X[i+1], nu, b ,c)
+    Elements[i] = ConvectionDiffusionReactionElement.Cubic_1D(X[i], X[i+1], nu, b ,c)
     for j in range(0, order+1):
         ConnectivityMatrix[i, j] = ConnectivityFunction(i, j)
 
@@ -75,7 +75,7 @@ for elidx, el in enumerate(Elements):
 # Apply boundary conditions
 lambda_left = lambda_right = 1
 left_bc_idx = ConnectivityMatrix[0][0]
-left_flux_idx = Ne+1
+left_flux_idx = BoundaryFluxDOFs[0]
 I[coo_idx] = left_bc_idx
 J[coo_idx] = left_flux_idx
 K[coo_idx] = -1
@@ -86,8 +86,8 @@ K[coo_idx] = -lambda_left
 coo_idx += 1
 F[left_flux_idx] = -lambda_left*g0
 
-right_bc_idx = ConnectivityMatrix[Ne-1][1]
-right_flux_idx = Ne+2
+right_bc_idx = ConnectivityMatrix[Ne-1][order]
+right_flux_idx = BoundaryFluxDOFs[1]
 I[coo_idx] = right_bc_idx
 J[coo_idx] = right_flux_idx
 K[coo_idx] = 1
@@ -101,6 +101,8 @@ F[right_flux_idx] = lambda_right*g1
 # Assemble global stiffness matrix and solve system
 print "Assembling Global Stiffness..."
 Kmat = sps.coo_matrix((K, (I, J)), shape=(Ndof, Ndof)).tocsc()
+# print Kmat.todense()
+# print F
 print "Solving Matrix..."
 v = spsolve(Kmat, F)
 
