@@ -54,7 +54,9 @@ class Linear_1D_VMS(Element.Linear_1D):
             pe = self.h * c / (2.0 * self.nu) 
             tau = (self.h / (2.0 * c)) * (np.cosh(pe)/np.sinh(pe) - 1.0/pe)
         else:
-            tau = self.h * self.h / (12.0 * self.nu)
+            # This is the limit I get as c->0, but I must be doing it wrong...
+            # tau = self.h * self.h / (12.0 * self.nu)
+            tau = 0
         K = np.zeros([2,2])
         for i in range(0, self.order+1):
             phi_i = self.phi(i)
