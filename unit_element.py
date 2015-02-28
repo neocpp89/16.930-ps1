@@ -225,19 +225,43 @@ class Test_CDR_Cubic_1D(unittest.TestCase):
     def test_stiffness_reaction(self):
         el = ConvectionDiffusionReactionElement.Cubic_1D(0, 0.25, 0, 1, 0);
         K = el.stiffness_matrix()
-        self.assertAlmostEqual(K[0,0], 1.0/12.0)
-        self.assertAlmostEqual(K[0,1], 1.0/24.0)
-        self.assertAlmostEqual(K[1,0], 1.0/24.0)
-        self.assertAlmostEqual(K[1,1], 1.0/12.0)
+        self.assertAlmostEqual(K[0,0], 2.0/105.0)
+        self.assertAlmostEqual(K[0,1], 33.0/2240.0)
+        self.assertAlmostEqual(K[0,2], -3.0/560.0)
+        self.assertAlmostEqual(K[0,3], 19.0/6720.0)
+        self.assertAlmostEqual(K[1,0], 33.0/2240.0)
+        self.assertAlmostEqual(K[1,1], 27.0/280.0)
+        self.assertAlmostEqual(K[1,2], -27.0/2240.0)
+        self.assertAlmostEqual(K[1,3], -3/560.0)
+        self.assertAlmostEqual(K[2,0], -3.0/560.0)
+        self.assertAlmostEqual(K[2,1], -27.0/2240.0)
+        self.assertAlmostEqual(K[2,2], 27.0/280.0)
+        self.assertAlmostEqual(K[2,3], 33.0/2240.0)
+        self.assertAlmostEqual(K[3,0], 19.0/6720.0)
+        self.assertAlmostEqual(K[3,1], -3/560.0)
+        self.assertAlmostEqual(K[3,2], 33.0/2240.0)
+        self.assertAlmostEqual(K[3,3], 2.0/105)
         return
 
     def test_stiffness_convection(self):
         el = ConvectionDiffusionReactionElement.Cubic_1D(0, 0.25, 0, 0, 1);
         K = el.stiffness_matrix()
         self.assertAlmostEqual(K[0,0], 0.5)
-        self.assertAlmostEqual(K[0,1], 0.5)
-        self.assertAlmostEqual(K[1,0], -0.5)
-        self.assertAlmostEqual(K[1,1], -0.5)
+        self.assertAlmostEqual(K[0,1], 57.0/80.0)
+        self.assertAlmostEqual(K[0,2], -0.3)
+        self.assertAlmostEqual(K[0,3], 7.0/80.0)
+        self.assertAlmostEqual(K[1,0], -57.0/80.0)
+        self.assertAlmostEqual(K[1,1], 0)
+        self.assertAlmostEqual(K[1,2], 81.0/80.0)
+        self.assertAlmostEqual(K[1,3], -0.3)
+        self.assertAlmostEqual(K[2,0], 0.3)
+        self.assertAlmostEqual(K[2,1], -81.0/80.0)
+        self.assertAlmostEqual(K[2,2], 0)
+        self.assertAlmostEqual(K[2,3], 57.0/80.0)
+        self.assertAlmostEqual(K[3,0], -7.0/80.0)
+        self.assertAlmostEqual(K[3,1], 3.0/10.0)
+        self.assertAlmostEqual(K[3,2], -57.0/80.0)
+        self.assertAlmostEqual(K[3,3], -0.5)
         return
 
     def test_load(self):
