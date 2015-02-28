@@ -3,6 +3,7 @@ import gauss
 import Element
 
 class Linear_1D(Element.Linear_1D):
+    desc = 'Linear CG'
     def __init__(self, x0, x1, nu, b, c):
         Element.Linear_1D.__init__(self, x0, x1)
         self.nu = nu
@@ -39,6 +40,7 @@ class Linear_1D(Element.Linear_1D):
         return F
 
 class Linear_1D_VMS(Element.Linear_1D):
+    desc = 'Linear CG with VMS'
     def __init__(self, x0, x1, nu, b, c):
         Element.Linear_1D.__init__(self, x0, x1)
         self.nu = nu
@@ -86,6 +88,7 @@ class Linear_1D_VMS(Element.Linear_1D):
         return F
 
 class Cubic_1D(Element.Cubic_1D):
+    desc = 'Cubic CG'
     def __init__(self, x0, x1, nu, b, c):
         Element.Cubic_1D.__init__(self, x0, x1)
         self.nu = nu

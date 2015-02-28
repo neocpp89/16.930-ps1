@@ -91,6 +91,7 @@ class _1D:
         return (X, Y)
 
 class Linear_1D(_1D):
+    order = 1
     def __init__(self, x0, x1):
         _1D.__init__(self, x0, x1, 1)
         return
@@ -121,6 +122,7 @@ class Linear_1D(_1D):
         return "x = (" + str(self.x0) + ',' + str(self.x1) + ")"
 
 class Cubic_1D(_1D):
+    order = 3
     def __init__(self, x0, x1):
         _1D.__init__(self, x0, x1, 3)
         return
