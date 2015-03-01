@@ -181,6 +181,22 @@ class Test_Cubic_1D(unittest.TestCase):
         self.assertAlmostEqual(el.jacobian(0), 2.0 / 74.0)
         return
 
+    def test_gradsqphi_master(self):
+        el = Element.Cubic_1D(-1, 1)
+        ggp0 = el.gradsqphi(0)
+        ggp1 = el.gradsqphi(1)
+        ggp2 = el.gradsqphi(2)
+        ggp3 = el.gradsqphi(3)
+        self.assertAlmostEqual(ggp0(-1), 4.5)
+        self.assertAlmostEqual(ggp0(1.0/3.0), 0)
+        self.assertAlmostEqual(ggp1(-1), -45.0/4.0)
+        self.assertAlmostEqual(ggp1(1.0/9.0), 0)
+        self.assertAlmostEqual(ggp2(-1), 9.0)
+        self.assertAlmostEqual(ggp2(-1.0/9.0), 0)
+        self.assertAlmostEqual(ggp3(-1), -9.0/4.0)
+        self.assertAlmostEqual(ggp3(-1.0/3.0), 0)
+        return
+
     def test_integrate_master(self):
         el = Element.Cubic_1D(-1, 1)
         I = el.integrate(lambda x: 1)

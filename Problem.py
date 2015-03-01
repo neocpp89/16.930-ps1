@@ -3,8 +3,10 @@ import Element
 import ConvectionDiffusionReactionElement
 import numpy as np
 import pylab
+import matplotlib as mpl
 import scipy.sparse as sps
-from scipy.sparse.linalg import spsolve
+from scipy.sparse.linalg  import spsolve
+mpl.rc_file(r'mpl.rc')
 
 '''
 from multiprocessing import Pool
@@ -25,7 +27,8 @@ poisson_problem = {
     'g0': 0,
     'g1': 1,
     'f': lambda x: x ** 2,
-    'analytic_solution': lambda x: (-x ** 4 + 13*x) / 12.0,
+    'analytic_solution': lambda x: (-x ** 4 + 13.0*x) / 12.0,
+    'grad_analytic_solution': lambda x: (-4.0*(x ** 3) + 13.0) / 12.0,
     'desc': 'Poisson Equation',
     'shortdesc': 'poisson'
 }
@@ -40,6 +43,7 @@ reaction_diffusion_problem = {
     'g1': 1,
     'f': lambda x: 0,
     'analytic_solution': lambda x: np.sinh(100.0 * x) / np.sinh(100.0),
+    'grad_analytic_solution': lambda x: 100.0 *np.cosh(100.0 * x) / np.sinh(100.0),
     'desc': 'Reaction-Diffusion Equation',
     'shortdesc': 'reaction_diffusion'
 }
@@ -54,6 +58,7 @@ convection_diffusion_problem = {
     'g1': 1,
     'f': lambda x: 0,
     'analytic_solution': lambda x: (1.0 - np.exp(100* x)) / (1.0 - np.exp(100)),
+    'grad_analytic_solution': lambda x: -100 * np.exp(100* x) / (1.0 - np.exp(100)),
     'desc': 'Convection-Diffusion Equation',
     'shortdesc': 'convection_diffusion'
 }
@@ -67,7 +72,7 @@ problems = [
 for problem in problems:
     left = problem['left']
     right = problem['right']
-    Ne = 100
+    Ne = 20
     h = (right - left) / Ne
 
     nu = problem['nu']
@@ -82,10 +87,8 @@ for problem in problems:
         ConvectionDiffusionReactionElement.Linear_1D_VMS,
         ConvectionDiffusionReactionElement.Cubic_1D,
     ]
-    ElementOrder = [1,1,3]
 
     X = np.linspace(left, right, Ne+1)
-    H = np.diff(X)
     Elements = [0]*(Ne)
 
     order = 3
@@ -102,7 +105,7 @@ for problem in problems:
 
     # Create triangulation
     for i in range(0, Ne):
-        Elements[i] = ConvectionDiffusionReactionElement.Cubic_1D(X[i], X[i+1], nu, b ,c)
+        Elements[i] = ConvectionDiffusionReactionElement.Cubic_1D_VMS(X[i], X[i+1], nu, b ,c)
         for j in range(0, order+1):
             ConnectivityMatrix[i, j] = ConnectivityFunction(i, j)
 
@@ -159,12 +162,16 @@ for problem in problems:
     print "Solving Matrix..."
     v = spsolve(Kmat, F)
 
-    pylab.figure()
+    pylab.figure(figsize=(3,3))
     pylab.plot(np.linspace(0,1,400), map(problem['analytic_solution'], np.linspace(0,1,400)), linewidth=3.0, color='orange')
     for elidx, el in enumerate(Elements):
         Xel,Yel = el.interpxy(v[ConnectivityMatrix[elidx,:]])
         pylab.plot(Xel, Yel)
     print "Writing plots..."
     pylab.savefig(problem['shortdesc']+".png")
+    L2e = map(lambda i: Elements[i].L2_error(v[ConnectivityMatrix[i, :]], problem['analytic_solution']), range(0, Ne))
+    H1e = map(lambda i: Elements[i].H1_error(v[ConnectivityMatrix[i, :]], problem['analytic_solution'], problem['grad_analytic_solution']), range(0, Ne))
+    print "L2 error", float(sum(L2e))
+    print "H1 error", float(sum(H1e))
     print "Done."
 
