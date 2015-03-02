@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import Element
+import Face
 import ConvectionDiffusionReactionElement
 import numpy as np
 import pylab
@@ -7,95 +8,6 @@ import matplotlib as mpl
 import scipy.sparse as sps
 from scipy.sparse.linalg  import spsolve
 mpl.rc_file(r'mpl.rc')
-
-class Face:
-    def __init__(self, left_element, right_element):
-        self.left = left_element
-        self.right = right_element
-        self.elements = (left_element, right_element)
-        self.c = self.left.c
-        self.nu = self.left.nu
-        return
-
-    # def calc_F_I(self, v_left, v_right):
-        # return 0.5*(self.c * (v_right + v_left) - abs(c) * (v_right - v_left))
-    def F_I_coeff(self, i):
-        if (i == 0):
-            # left
-            return 0.5*(self.c + abs(c))
-        elif (i == 1):
-            # right
-            return 0.5*(self.c - abs(c))
-        else:
-            return None
-
-    def jump_coeff(self, i):
-        if (i == 0):
-            # left
-            return 1
-        elif (i == 1):
-            # right
-            return -1
-        else:
-            return None
-
-    def avg_coeff(self, i):
-        if (i == 0):
-            # left
-            return 0.5
-        elif (i == 1):
-            # right
-            return 0.5
-        else:
-            return None
-
-    def w_jump_coeff(self, i, j):
-        if (i == j):
-            return 1
-        else:
-            return 0
-
-    def grad_coeff(self, i):
-        if (i == 0):
-            # left
-            slo = self.left.order
-            return self.left.calc_gradphi(slo, 1)*self.left.jacobian(self.left.T(1))
-        elif (i == 1):
-            # right 
-            return self.right.calc_gradphi(0, -1)*self.right.jacobian(self.right.T(-1))
-        return None
-
-    def F_I(self):
-        K = np.zeros([2, 2])
-        for i in range(0, 2):
-            for j in range(0, 2):
-                K[i,j] = self.F_I_coeff(i)*self.jump_coeff(j)
-        return K
-
-    def consistency(self):
-        K = np.zeros([2, 2])
-        for i in range(0, 2):
-            for j in range(0, 2):
-                K[i,j] = -self.nu*self.avg_coeff(i)*self.grad_coeff(i)*self.jump_coeff(j)
-                K[i,j] += -self.nu*self.avg_coeff(j)*self.grad_coeff(j)*self.jump_coeff(i)
-        return K
-
-    def stability(self):
-        K = np.zeros([2, 2])
-        for i in range(0, 2):
-            for j in range(0, 2):
-                K[i,j] = -2*(1+(self.left.order-1)/2.0)*self.nu*self.jump_coeff(i)*self.jump_coeff(j)
-        return K
-
-'''
-from multiprocessing import Pool
-
-def elk(el):
-    return el.stiffness_matrix()
-
-def elf(el):
-    return el.load_vector(lambda x: 0)
-'''
 
 poisson_problem = {
     'left': 0,
@@ -151,7 +63,7 @@ problems = [
 for problem in problems:
     left = problem['left']
     right = problem['right']
-    Ne = 100
+    Ne = 10
     Nf = Ne - 1
     h = (right - left) / Ne
 
@@ -172,13 +84,13 @@ for problem in problems:
     Elements = [0]*(Ne)
     Faces = [0]*(Nf)
 
-    order = 1
+    order = 3
     ConnectivityFunction = lambda element_idx, local_node_idx: int((order+1)*element_idx + local_node_idx)
     ConnectivityMatrix = np.empty([Ne, order+1], dtype=np.int_)
     BoundaryFluxDOFs = [(order+1)*Ne, (order+1)*Ne+1]
     Ndof = (order+1)*Ne+2
 
-    splen = 4*Nf + Ndof*(order+1)**2
+    splen = (4*Nf + Ndof)*(order+1)**2 
     I = np.zeros([splen])
     J = np.zeros([splen])
     K = np.zeros([splen])
@@ -187,24 +99,18 @@ for problem in problems:
 
     # Create triangulation
     for i in range(0, Ne):
-        Elements[i] = ConvectionDiffusionReactionElement.Linear_1D(X[i], X[i+1], nu, b ,c)
+        Elements[i] = ConvectionDiffusionReactionElement.Cubic_1D(X[i], X[i+1], nu, b ,c)
         for j in range(0, order+1):
             ConnectivityMatrix[i, j] = ConnectivityFunction(i, j)
 
     for i in range(0, Nf):
-        Faces[i] = Face(Elements[i], Elements[i+1])
-
-    # p = Pool(4)
-    # K_els = p.map(elk, Elements)
-    # F_els = p.map(elf, Elements)
+        Faces[i] = Face._1D(Elements[i], Elements[i+1])
 
     # Assemble elemental stiffness matrices
     print "Calculating Elemental Stiffness..."
     for elidx, el in enumerate(Elements):
         K_el = el.stiffness_matrix()
         F_el = el.load_vector(f)
-        # K_el = K_els[elidx]
-        # F_el = F_els[elidx]
         for i in range(0, order+1):
             glob_i = int(ConnectivityMatrix[elidx][i])
             F[glob_i] += F_el[i]
@@ -217,25 +123,17 @@ for problem in problems:
 
     # Apply face fluxes
     for faidx, fa in enumerate(Faces):
-        K_fa = fa.F_I() + fa.consistency() + fa.stability()
-        gl_idx = ConnectivityMatrix[faidx][order]
-        gr_idx = ConnectivityMatrix[faidx+1][0]
-        I[coo_idx] = gl_idx
-        J[coo_idx] = gl_idx
-        K[coo_idx] = K_fa[0, 0]
-        coo_idx += 1
-        I[coo_idx] = gl_idx
-        J[coo_idx] = gr_idx
-        K[coo_idx] = K_fa[0, 1]
-        coo_idx += 1
-        I[coo_idx] = gr_idx
-        J[coo_idx] = gl_idx
-        K[coo_idx] = K_fa[1, 0]
-        coo_idx += 1
-        I[coo_idx] = gr_idx
-        J[coo_idx] = gr_idx
-        K[coo_idx] = K_fa[1, 1]
-        coo_idx += 1
+        K_fa = fa.K()
+        GL = ConnectivityMatrix[faidx, :]
+        GR = ConnectivityMatrix[faidx+1, :]
+        SS = np.concatenate((GL, GR))
+        GL, GR = (SS, SS)
+        for i, gl_idx in enumerate(GL):
+            for j, gr_idx in enumerate(GR):
+                I[coo_idx] = gl_idx
+                J[coo_idx] = gr_idx
+                K[coo_idx] = K_fa[i, j]
+                coo_idx += 1
 
     # Apply boundary conditions
     lambda_left = lambda_right = 1
@@ -271,10 +169,10 @@ for problem in problems:
     v = spsolve(Kmat, F)
 
     pylab.figure(figsize=(3,3))
-    pylab.plot(np.linspace(0,1,400), map(problem['analytic_solution'], np.linspace(0,1,400)), linewidth=3.0, color='orange')
+    pylab.plot(np.linspace(0,1,400), map(problem['analytic_solution'], np.linspace(0,1,400)), linewidth=4.0, color='orange')
     for elidx, el in enumerate(Elements):
         Xel,Yel = el.interpxy(v[ConnectivityMatrix[elidx,:]])
-        pylab.plot(Xel, Yel)
+        pylab.plot(Xel, Yel, linewidth=1.5)
     print "Writing plots..."
     pylab.savefig(problem['shortdesc']+"_dg.png")
     L2e = map(lambda i: Elements[i].L2_error(v[ConnectivityMatrix[i, :]], problem['analytic_solution']), range(0, Ne))

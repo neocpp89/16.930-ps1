@@ -102,9 +102,6 @@ class _1D:
         # this is slow, but easy for me to reason about (no d(calc_p)/dx)
         g = lambda x: self.calc_p(node_coeffs, self.T(x)) - f(x)
         dg = lambda x: sum(map(lambda i: node_coeffs[i]*self.calc_gradphi(i, self.T(x))*self.jacobian(x), range(0, self.order+1))) - df(x)
-        #print self
-        #print map(self.T_inv, self.xipts)
-        #print map(dg, map(self.T_inv, self.xipts))
         return self.H1_norm(g, dg)
 
     def interpxy(self, node_coeffs, npts=20):
