@@ -3,16 +3,66 @@
 \usepackage{siunitx}
 \usepackage{array}
 \usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{graphicx}
 
 \begin{document}
 \author{Sachith Dunatunga}
 \title{16.930 PS1}
 \maketitle
 
-\section{Error Tables}
-\input{./cg_error_tables.tex}
-\clearpage
+\section{Notes}
+The code to generate everything is available online at github at \url{https://github.com/neocpp89/16.930-ps1}.
+\begin{itemize}
+\item
+A couple of notes for the CG/CG+VMS cases:
+\begin{itemize}
+    \item For the most parts, the solutions do converge with the correct order (linear and cubic for their respective element types in $L_2$, and one order less in $H_1$).
+    \item VMS stabilization doesn't seem to help the cubic at all (and in fact reduces the convergence rate to that of the linear problem).
+            This is probably an error in my implementation (particularly in the $\partial_x (\nu \partial_x w)$ term, since this is nonzero for the cubic).
+            The VMS stabilization helps the linear problem at first, but the rate is the same, and in fact there is a crossover in error after around 80 elements.
+            The difference in that case is minor, however, unlike the cubic problem.
+            The plots show that the VMS solution appear to do the correct thing for the linear case with few elements though.
+\end{itemize}
 
+\item
+A couple of notes for the DG case:
+\begin{itemize}
+    \item I was not able to get this to work correctly if the problem was not pure diffusion, although it converges to the correct solution after many elements in all cases.
+    \item With pure diffusion, the solution is visually indistinguishable from the CG case and errors are similar.
+    \item There is probably an issue with the stabilization term (containing the face-lifting operator). If I increase the factor $\eta_f$ drastically (100-1000x), the solution becomes much more CG-like and converges to the exact solution as expected in all cases. I left this out of the current set of plots because it feels like cheating.
+\end{itemize}
+\end{itemize}
+
+\clearpage
+\section{Error Plots}
+\begin{figure}[!h]
+\includegraphics[scale=1.0]{figs/l2_error_Convection-Diffusion.png}
+\includegraphics[scale=1.0]{figs/h1_error_Convection-Diffusion.png}
+\centering
+\caption{$L_2$ and $H_1$ errors for the Convection-Diffusion problem (CG and CG+VMS).}
+\end{figure}
+
+\begin{figure}[!h]
+\includegraphics[scale=1.0]{figs/l2_error_Poisson.png}
+\includegraphics[scale=1.0]{figs/h1_error_Poisson.png}
+\centering
+\caption{$L_2$ and $H_1$ errors for the Poisson problem (CG and CG+VMS).}
+\end{figure}
+
+\begin{figure}[!h]
+\includegraphics[scale=1.0]{figs/l2_error_Reaction-Diffusion.png}
+\includegraphics[scale=1.0]{figs/h1_error_Reaction-Diffusion.png}
+\centering
+\caption{$L_2$ and $H_1$ errors for the Reaction-Diffusion problem (CG and CG+VMS).}
+\end{figure}
+
+\clearpage
+\section{Error Tables}
+
+\input{./cg_error_tables.tex}
+
+\clearpage
 \appendix
 \section{Solution Plots}
 
