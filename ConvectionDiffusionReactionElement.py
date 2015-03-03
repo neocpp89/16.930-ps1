@@ -4,6 +4,7 @@ import Element
 
 class Linear_1D(Element.Linear_1D):
     desc = 'Linear'
+    shortdesc = 'linear'
     def __init__(self, x0, x1, nu, b, c):
         Element.Linear_1D.__init__(self, x0, x1)
         self.nu = nu
@@ -41,6 +42,7 @@ class Linear_1D(Element.Linear_1D):
 
 class Linear_1D_VMS(Element.Linear_1D):
     desc = 'Linear with VMS'
+    shortdesc = 'linear_vms'
     def __init__(self, x0, x1, nu, b, c):
         Element.Linear_1D.__init__(self, x0, x1)
         self.nu = nu
@@ -89,6 +91,7 @@ class Linear_1D_VMS(Element.Linear_1D):
 
 class Cubic_1D(Element.Cubic_1D):
     desc = 'Cubic'
+    shortdesc = 'cubic'
     def __init__(self, x0, x1, nu, b, c):
         Element.Cubic_1D.__init__(self, x0, x1)
         self.nu = nu
@@ -124,6 +127,7 @@ class Cubic_1D(Element.Cubic_1D):
 
 class Cubic_1D_VMS(Element.Cubic_1D):
     desc = 'Cubic with VMS'
+    shortdesc = 'cubic_vms'
     def __init__(self, x0, x1, nu, b, c):
         Element.Cubic_1D.__init__(self, x0, x1)
         self.nu = nu
