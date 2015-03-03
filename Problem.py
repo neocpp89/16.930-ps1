@@ -111,7 +111,7 @@ class Problem:
         return self.V
 
     def CalculateErrors(self):
-        L2_error = sum(map(lambda i: self.Elements[i].L2_error(self.V[self.ConnectivityMatrix[i, :]], self.params['analytic_solution']), range(0, self.Ne)))
-        H1_error = sum(map(lambda i: self.Elements[i].H1_error(self.V[self.ConnectivityMatrix[i, :]], self.params['analytic_solution'], self.params['grad_analytic_solution']), range(0, self.Ne)))
+        L2_error = np.sqrt(sum(map(lambda i: self.Elements[i].L2_error(self.V[self.ConnectivityMatrix[i, :]], self.params['analytic_solution']) ** 2, range(0, self.Ne))))
+        H1_error = np.sqrt(sum(map(lambda i: self.Elements[i].H1_error(self.V[self.ConnectivityMatrix[i, :]], self.params['analytic_solution'], self.params['grad_analytic_solution']) ** 2, range(0, self.Ne))))
         return map(float, (L2_error, H1_error))
 

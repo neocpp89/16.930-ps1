@@ -25,42 +25,45 @@ pdescs = dg_errors.keys()
 ETdescs = map(lambda x: x[1], sorted(map(lambda x: (-len(x.split(' ')), x), dg_errors[pdescs[0]].keys()), reverse=True))
 NumElements = sorted(dg_errors[pdescs[0]][ETdescs[0]].keys())
 
+make_sure_path_exists('report')
+ferrors = open('report/dg_error_tables.tex', 'w')
+frates = open('report/dg_rate_tables.tex', 'w')
 # output errors in a latex-friendly table using siunitx's '\num'
 for pd in pdescs:
-    print r'\begin{table}[!h]'
-    print r'\centering'
-    print r'\caption{'+pd+r': $L_2$ Error (DG method)}'
-    print r'\begin{tabular}{r | ' + ' '.join(['r']*len(ETdescs)) + r'}'
-    print r'Number of Elements & ' + ' & '.join(ETdescs) + r' \\'
-    print r'\midrule'
+    ferrors.write(r'\begin{table}[!h]'+'\n')
+    ferrors.write(r'\centering'+'\n')
+    ferrors.write(r'\caption{'+pd+r': $L_2$ Error (DG method)}'+'\n')
+    ferrors.write(r'\begin{tabular}{r | ' + ' '.join(['r']*len(ETdescs)) + r'}'+'\n')
+    ferrors.write(r'Number of Elements & ' + ' & '.join(ETdescs) + r' \\'+'\n')
+    ferrors.write(r'\midrule'+'\n')
     for Ne in NumElements:
-        print r'\num{{{:d}}} &'.format(Ne),
-        print ' & '.join(map(lambda ET: r'\num{{{:.4e}}}'.format(dg_errors[pd][ET][Ne][1]), ETdescs)) + r' \\'
-    print r'\end{tabular}'
-    print r'\end{table}'
+        ferrors.write(r'\num{{{:d}}} &'.format(Ne)+' ')
+        ferrors.write(' & '.join(map(lambda ET: r'\num{{{:.4e}}}'.format(dg_errors[pd][ET][Ne][1]), ETdescs)) + r' \\'+'\n')
+    ferrors.write(r'\end{tabular}'+'\n')
+    ferrors.write(r'\end{table}'+'\n')
 
 # same but for H1 error
 for pd in pdescs:
-    print r'\begin{table}[!h]'
-    print r'\centering'
-    print r'\caption{'+pd+r': $H_1$ Error (DG method)}'
-    print r'\begin{tabular}{r | ' + ' '.join(['r']*len(ETdescs)) + r'}'
-    print r'Number of Elements & ' + ' & '.join(ETdescs) + r' \\'
-    print r'\midrule'
+    ferrors.write(r'\begin{table}[!h]'+'\n')
+    ferrors.write(r'\centering'+'\n')
+    ferrors.write(r'\caption{'+pd+r': $H_1$ Error (DG method)}'+'\n')
+    ferrors.write(r'\begin{tabular}{r | ' + ' '.join(['r']*len(ETdescs)) + r'}'+'\n')
+    ferrors.write(r'Number of Elements & ' + ' & '.join(ETdescs) + r' \\'+'\n')
+    ferrors.write(r'\midrule'+'\n')
     for Ne in NumElements:
-        print r'\num{{{:d}}} &'.format(Ne),
-        print ' & '.join(map(lambda ET: r'\num{{{:.4e}}}'.format(dg_errors[pd][ET][Ne][1]), ETdescs)) + r' \\'
-    print r'\end{tabular}'
-    print r'\end{table}'
+        ferrors.write(r'\num{{{:d}}} &'.format(Ne)+' ')
+        ferrors.write(' & '.join(map(lambda ET: r'\num{{{:.4e}}}'.format(dg_errors[pd][ET][Ne][1]), ETdescs)) + r' \\'+'\n')
+    ferrors.write(r'\end{tabular}'+'\n')
+    ferrors.write(r'\end{table}'+'\n')
 
 # L2 and H1 convergence rates
 for pd in pdescs:
-    print r'\begin{table}[!h]'
-    print r'\centering'
-    print r'\caption{'+pd+r': Convergence Rates (DG method)}'
-    print r'\begin{tabular}{r | r r}'
-    print r'Element & $L_2$ & $H_1$ \\'
-    print r'\midrule'
+    frates.write(r'\begin{table}[!h]'+'\n')
+    frates.write(r'\centering'+'\n')
+    frates.write(r'\caption{'+pd+r': Convergence Rates (DG method)}'+'\n')
+    frates.write(r'\begin{tabular}{r | r r}'+'\n')
+    frates.write(r'Element & $L_2$ & $H_1$ \\'+'\n')
+    frates.write(r'\midrule'+'\n')
     for ET in ETdescs:
         upper = dg_errors[pd][ET][80][0]
         lower = dg_errors[pd][ET][100][0]
@@ -68,11 +71,11 @@ for pd in pdescs:
         upper = dg_errors[pd][ET][80][1]
         lower = dg_errors[pd][ET][100][1]
         h1_rate = np.log10(upper/lower)/np.log10(100.0/80.0)
-        print ET+r' & ',
-        print r'\num{{{:.3f}}} & '.format(l2_rate),
-        print r'\num{{{:.3f}}} \\'.format(h1_rate)
-    print r'\end{tabular}'
-    print r'\end{table}'
+        frates.write(ET+r' & ')
+        frates.write(r'\num{{{:.3f}}} & '.format(l2_rate))
+        frates.write(r'\num{{{:.3f}}} \\'.format(h1_rate)+'\n')
+    frates.write(r'\end{tabular}'+'\n')
+    frates.write(r'\end{table}'+'\n')
 
 # generate plots for L2 error
 for pd in pdescs:
