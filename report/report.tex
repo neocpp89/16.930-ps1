@@ -32,6 +32,9 @@ A couple of notes for the DG case:
     \item With pure diffusion, the solution is visually indistinguishable from the CG case and errors are similar.
     \item There is probably an issue with the stabilization term (containing the face-lifting operator). If I increase the factor $\eta_f$ drastically (100-1000x), the solution becomes much more CG-like and converges to the exact solution as expected in all cases. I left this out of the current set of plots because it feels like cheating.
 \end{itemize}
+
+\item
+The HDG case is not currently implemented. If I managed to have a workable solution before the deadline, I will add it here.
 \end{itemize}
 
 \clearpage
@@ -87,5 +90,135 @@ A couple of notes for the DG case:
 \clearpage
 \appendix
 \section{Selected Solution Plots}
+\begin{figure}[!h]
+\begin{tabular}{c c c c}
+\includegraphics[scale=0.5]{figs/convection_diffusion_linear_10.png} &
+\includegraphics[scale=0.5]{figs/convection_diffusion_linear_20.png} &
+\includegraphics[scale=0.5]{figs/convection_diffusion_linear_80.png} &
+\includegraphics[scale=0.5]{figs/convection_diffusion_linear_200.png} \\
+\includegraphics[scale=0.5]{figs/convection_diffusion_linear_vms_10.png} &
+\includegraphics[scale=0.5]{figs/convection_diffusion_linear_vms_20.png} &
+\includegraphics[scale=0.5]{figs/convection_diffusion_linear_vms_80.png} &
+\includegraphics[scale=0.5]{figs/convection_diffusion_linear_vms_200.png} \\
+\includegraphics[scale=0.5]{figs/convection_diffusion_cubic_10.png} &
+\includegraphics[scale=0.5]{figs/convection_diffusion_cubic_20.png} &
+\includegraphics[scale=0.5]{figs/convection_diffusion_cubic_80.png} &
+\includegraphics[scale=0.5]{figs/convection_diffusion_cubic_200.png} \\
+\includegraphics[scale=0.5]{figs/convection_diffusion_cubic_vms_10.png} &
+\includegraphics[scale=0.5]{figs/convection_diffusion_cubic_vms_20.png} &
+\includegraphics[scale=0.5]{figs/convection_diffusion_cubic_vms_80.png} &
+\includegraphics[scale=0.5]{figs/convection_diffusion_cubic_vms_200.png} \\
+\end{tabular}
+\caption{A few Convection-Diffusion Equation solutions from CG methods. The analytical solution is given by thick orange line the background. Different colors correspond to different elements.}
+\end{figure}
 
+\begin{figure}[!h]
+\begin{tabular}{c c c c}
+\includegraphics[scale=0.5]{figs/poisson_linear_10.png} &
+\includegraphics[scale=0.5]{figs/poisson_linear_20.png} &
+\includegraphics[scale=0.5]{figs/poisson_linear_80.png} &
+\includegraphics[scale=0.5]{figs/poisson_linear_200.png} \\
+\includegraphics[scale=0.5]{figs/poisson_linear_vms_10.png} &
+\includegraphics[scale=0.5]{figs/poisson_linear_vms_20.png} &
+\includegraphics[scale=0.5]{figs/poisson_linear_vms_80.png} &
+\includegraphics[scale=0.5]{figs/poisson_linear_vms_200.png} \\
+\includegraphics[scale=0.5]{figs/poisson_cubic_10.png} &
+\includegraphics[scale=0.5]{figs/poisson_cubic_20.png} &
+\includegraphics[scale=0.5]{figs/poisson_cubic_80.png} &
+\includegraphics[scale=0.5]{figs/poisson_cubic_200.png} \\
+\includegraphics[scale=0.5]{figs/poisson_cubic_vms_10.png} &
+\includegraphics[scale=0.5]{figs/poisson_cubic_vms_20.png} &
+\includegraphics[scale=0.5]{figs/poisson_cubic_vms_80.png} &
+\includegraphics[scale=0.5]{figs/poisson_cubic_vms_200.png} \\
+\end{tabular}
+\caption{A few Poisson Equation solutions from CG methods. The analytical solution is given by thick orange line the background. Different colors correspond to different elements.}
+\end{figure}
+
+\begin{figure}[!h]
+\begin{tabular}{c c c c}
+\includegraphics[scale=0.5]{figs/reaction_diffusion_linear_10.png} &
+\includegraphics[scale=0.5]{figs/reaction_diffusion_linear_20.png} &
+\includegraphics[scale=0.5]{figs/reaction_diffusion_linear_80.png} &
+\includegraphics[scale=0.5]{figs/reaction_diffusion_linear_200.png} \\
+\includegraphics[scale=0.5]{figs/reaction_diffusion_linear_vms_10.png} &
+\includegraphics[scale=0.5]{figs/reaction_diffusion_linear_vms_20.png} &
+\includegraphics[scale=0.5]{figs/reaction_diffusion_linear_vms_80.png} &
+\includegraphics[scale=0.5]{figs/reaction_diffusion_linear_vms_200.png} \\
+\includegraphics[scale=0.5]{figs/reaction_diffusion_cubic_10.png} &
+\includegraphics[scale=0.5]{figs/reaction_diffusion_cubic_20.png} &
+\includegraphics[scale=0.5]{figs/reaction_diffusion_cubic_80.png} &
+\includegraphics[scale=0.5]{figs/reaction_diffusion_cubic_200.png} \\
+\includegraphics[scale=0.5]{figs/reaction_diffusion_cubic_vms_10.png} &
+\includegraphics[scale=0.5]{figs/reaction_diffusion_cubic_vms_20.png} &
+\includegraphics[scale=0.5]{figs/reaction_diffusion_cubic_vms_80.png} &
+\includegraphics[scale=0.5]{figs/reaction_diffusion_cubic_vms_200.png} \\
+\end{tabular}
+\caption{A few Reaction-Diffusion Equation solutions from CG methods. The analytical solution is given by thick orange line the background. Different colors correspond to different elements.}
+\end{figure}
+
+\begin{figure}[!h]
+\begin{tabular}{c c c c}
+\includegraphics[scale=0.5]{figs/dg_convection_diffusion_linear_10.png} &
+\includegraphics[scale=0.5]{figs/dg_convection_diffusion_linear_20.png} &
+\includegraphics[scale=0.5]{figs/dg_convection_diffusion_linear_80.png} &
+\includegraphics[scale=0.5]{figs/dg_convection_diffusion_linear_200.png} \\
+%\includegraphics[scale=0.5]{figs/dg_convection_diffusion_linear_vms_10.png} &
+%\includegraphics[scale=0.5]{figs/dg_convection_diffusion_linear_vms_20.png} &
+%\includegraphics[scale=0.5]{figs/dg_convection_diffusion_linear_vms_80.png} &
+%\includegraphics[scale=0.5]{figs/dg_convection_diffusion_linear_vms_200.png} \\
+\includegraphics[scale=0.5]{figs/dg_convection_diffusion_cubic_10.png} &
+\includegraphics[scale=0.5]{figs/dg_convection_diffusion_cubic_20.png} &
+\includegraphics[scale=0.5]{figs/dg_convection_diffusion_cubic_80.png} &
+\includegraphics[scale=0.5]{figs/dg_convection_diffusion_cubic_200.png} \\
+%\includegraphics[scale=0.5]{figs/dg_convection_diffusion_cubic_vms_10.png} &
+%\includegraphics[scale=0.5]{figs/dg_convection_diffusion_cubic_vms_20.png} &
+%\includegraphics[scale=0.5]{figs/dg_convection_diffusion_cubic_vms_80.png} &
+%\includegraphics[scale=0.5]{figs/dg_convection_diffusion_cubic_vms_200.png} \\
+\end{tabular}
+\caption{A few Convection-Diffusion Equation solutions from DG methods. The analytical solution is given by thick orange line the background. Different colors correspond to different elements.}
+\end{figure}
+
+\begin{figure}[!h]
+\begin{tabular}{c c c c}
+\includegraphics[scale=0.5]{figs/dg_poisson_linear_10.png} &
+\includegraphics[scale=0.5]{figs/dg_poisson_linear_20.png} &
+\includegraphics[scale=0.5]{figs/dg_poisson_linear_80.png} &
+\includegraphics[scale=0.5]{figs/dg_poisson_linear_200.png} \\
+%\includegraphics[scale=0.5]{figs/dg_poisson_linear_vms_10.png} &
+%\includegraphics[scale=0.5]{figs/dg_poisson_linear_vms_20.png} &
+%\includegraphics[scale=0.5]{figs/dg_poisson_linear_vms_80.png} &
+%\includegraphics[scale=0.5]{figs/dg_poisson_linear_vms_200.png} \\
+\includegraphics[scale=0.5]{figs/dg_poisson_cubic_10.png} &
+\includegraphics[scale=0.5]{figs/dg_poisson_cubic_20.png} &
+\includegraphics[scale=0.5]{figs/dg_poisson_cubic_80.png} &
+\includegraphics[scale=0.5]{figs/dg_poisson_cubic_200.png} \\
+%\includegraphics[scale=0.5]{figs/dg_poisson_cubic_vms_10.png} &
+%\includegraphics[scale=0.5]{figs/dg_poisson_cubic_vms_20.png} &
+%\includegraphics[scale=0.5]{figs/dg_poisson_cubic_vms_80.png} &
+%\includegraphics[scale=0.5]{figs/dg_poisson_cubic_vms_200.png} \\
+\end{tabular}
+\caption{A few Poisson Equation solutions from DG methods. The analytical solution is given by thick orange line the background. Different colors correspond to different elements.}
+\end{figure}
+
+\begin{figure}[!h]
+\begin{tabular}{c c c c}
+\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_linear_10.png} &
+\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_linear_20.png} &
+\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_linear_80.png} &
+\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_linear_200.png} \\
+%\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_linear_vms_10.png} &
+%\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_linear_vms_20.png} &
+%\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_linear_vms_80.png} &
+%\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_linear_vms_200.png} \\
+\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_cubic_10.png} &
+\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_cubic_20.png} &
+\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_cubic_80.png} &
+\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_cubic_200.png} \\
+%\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_cubic_vms_10.png} &
+%\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_cubic_vms_20.png} &
+%\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_cubic_vms_80.png} &
+%\includegraphics[scale=0.5]{figs/dg_reaction_diffusion_cubic_vms_200.png} \\
+\end{tabular}
+\caption{A few Reaction-Diffusion Equation solutions from DG methods. The analytical solution is given by thick orange line the background. Different colors correspond to different elements.}
+\end{figure}
 \end{document}
