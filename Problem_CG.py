@@ -10,6 +10,7 @@ import os
 import errno
 import pickle
 import Problem
+mpl.rc_file(r'./mpl.rc')
 
 def make_sure_path_exists(path):
     try:

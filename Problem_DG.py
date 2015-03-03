@@ -7,7 +7,85 @@ import pylab
 import matplotlib as mpl
 import scipy.sparse as sps
 from scipy.sparse.linalg  import spsolve
-mpl.rc_file(r'mpl.rc')
+import os
+import errno
+import pickle
+import Problem
+mpl.rc_file(r'./mpl.rc')
+
+def make_sure_path_exists(path):
+    try:
+        os.makedirs(path)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise
+
+class Problem_DG(Problem.Problem):
+    def __init__(self, problem_description, element, Ne, np=1):
+        self.params = problem_description
+        self.ElementType = element
+        self.Ne = Ne
+        if (np > 1):
+            self.parallel = True
+            self.nproc = np
+        else:
+            self.parallel = False
+            self.nproc = 1
+        return
+
+    def CreateTriangulation(self, verbose=False):
+        if verbose:
+            print "Creating Triangulation...",
+        self.Nf = Ne-1
+        X = np.linspace(self.params['left'], self.params['right'], self.Ne+1)
+        self.Elements = [0]*(self.Ne)
+        self.Faces = [0]*(self.Nf)
+
+        order = self.ElementType.order
+        ConnectivityFunction = lambda element_idx, local_node_idx: int((order+1)*element_idx + local_node_idx)
+        self.ConnectivityMatrix = np.empty([self.Ne, order+1], dtype=np.int_)
+        self.BoundaryFluxDOFs = [(order+1)*self.Ne, (order+1)*self.Ne+1]
+        self.Ndof = (order+1)*self.Ne+2
+
+        splen = (4*self.Nf + self.Ndof)*(order+1)**2 
+        self.I = np.zeros([splen])
+        self.J = np.zeros([splen])
+        self.K = np.zeros([splen])
+        self.F = np.zeros([self.Ndof])
+        self.spi = 0
+
+        # Acutally create triangulation
+        for i in range(0, self.Ne):
+            self.Elements[i] = self.ElementType(X[i],
+                X[i+1], self.params['nu'], self.params['b'], self.params['c'])
+            for j in range(0, order+1):
+                self.ConnectivityMatrix[i, j] = ConnectivityFunction(i, j)
+        for i in range(0, self.Nf):
+            self.Faces[i] = Face._1D(self.Elements[i], self.Elements[i+1])
+
+        if verbose:
+            print "Done."
+        return
+
+    def CalculateFaceStiffnesses(self, verbose=False):
+        if verbose:
+            print "Calculating Face Stiffness...",
+        for faidx, fa in enumerate(self.Faces):
+            K_fa = fa.K()
+            GL = self.ConnectivityMatrix[faidx, :]
+            GR = self.ConnectivityMatrix[faidx+1, :]
+            SS = np.concatenate((GL, GR))
+            GL, GR = (SS, SS)
+            for i, gl_idx in enumerate(GL):
+                for j, gr_idx in enumerate(GR):
+                    self.I[self.spi] = gl_idx
+                    self.J[self.spi] = gr_idx
+                    self.K[self.spi] = K_fa[i, j]
+                    self.spi += 1
+        if verbose:
+            print "Done..."
+        return
+
 
 poisson_problem = {
     'left': 0,
@@ -54,130 +132,62 @@ convection_diffusion_problem = {
     'shortdesc': 'convection_diffusion'
 }
 
-problems = [
+params = [
     poisson_problem,
     reaction_diffusion_problem,
     convection_diffusion_problem
 ]
 
-for problem in problems:
-    left = problem['left']
-    right = problem['right']
-    Ne = 10
-    Nf = Ne - 1
-    h = (right - left) / Ne
+ElementTypes = [
+    ConvectionDiffusionReactionElement.Linear_1D,
+    ConvectionDiffusionReactionElement.Cubic_1D,
+]
 
-    nu = problem['nu']
-    b = problem['b']
-    c = problem['c']
-    g0 = problem['g0']
-    g1 = problem['g1']
-    f = problem['f']
+NumElements = [10, 20, 40, 80, 100, 160, 200, 320, 400]
 
-    ElementType = [
-        ConvectionDiffusionReactionElement.Linear_1D,
-        ConvectionDiffusionReactionElement.Linear_1D_VMS,
-        ConvectionDiffusionReactionElement.Cubic_1D,
-    ]
+errors = {}
 
-    X = np.linspace(left, right, Ne+1)
-    Elements = [0]*(Ne)
-    Faces = [0]*(Nf)
+for param in params:
+    errors[param['desc']] = {}
 
-    order = 3
-    ConnectivityFunction = lambda element_idx, local_node_idx: int((order+1)*element_idx + local_node_idx)
-    ConnectivityMatrix = np.empty([Ne, order+1], dtype=np.int_)
-    BoundaryFluxDOFs = [(order+1)*Ne, (order+1)*Ne+1]
-    Ndof = (order+1)*Ne+2
+    for ET in ElementTypes:
+        errors[param['desc']][ET.desc] = {}
 
-    splen = (4*Nf + Ndof)*(order+1)**2 
-    I = np.zeros([splen])
-    J = np.zeros([splen])
-    K = np.zeros([splen])
-    F = np.zeros([Ndof, 1])
-    coo_idx = 0
+        for Ne in NumElements:
+            p = Problem_DG(param, ET, Ne)
+            print "Problem type:", p.params['desc'], "Element type:", p.ElementType.desc, "Ne:", p.Ne
+            p.CreateTriangulation()
+            p.CalculateElementStiffnesses()
+            p.CalculateFaceStiffnesses()
+            p.ApplyBoundaryConditions()
+            p.Assemble()
+            v = p.Solve()
+            L2e, H1e = p.CalculateErrors()
+            errors[param['desc']][ET.desc][Ne] = (L2e, H1e)
 
-    # Create triangulation
-    for i in range(0, Ne):
-        Elements[i] = ConvectionDiffusionReactionElement.Cubic_1D(X[i], X[i+1], nu, b ,c)
-        for j in range(0, order+1):
-            ConnectivityMatrix[i, j] = ConnectivityFunction(i, j)
+            f = pylab.figure(figsize=(3,3))
+            pylab.plot(np.linspace(0,1,400), map(p.params['analytic_solution'], np.linspace(0,1,400)), linewidth=3.0, color='orange')
+            for elidx, el in enumerate(p.Elements):
+                Xel,Yel = el.interpxy(v[p.ConnectivityMatrix[elidx,:]])
+                pylab.plot(Xel, Yel)
+            print "Writing plots..."
+            pylab.xlabel('Spatial Coordinate X')
+            pylab.ylabel('Solution V')
+            esplit = p.ElementType.desc.split(' ')
+            etype = esplit[0]
+            if (len(esplit) > 1):
+                estab = " ".join(esplit[1:])
+            else:
+                estab = ""
+            pylab.title(p.params['desc'] + "\nusing " + str(p.Ne) + " " + etype + " Elements " + estab)
+            pylab.tight_layout(pad=0.1)
+            make_sure_path_exists('report/figs')
+            pylab.savefig('report/figs/dg_'+p.params['shortdesc']+"_"+p.ElementType.shortdesc+"_"+str(p.Ne)+".png")
+            print "L2 error", L2e
+            print "H1 error", H1e
+            print "Done."
+            pylab.close(f)
 
-    for i in range(0, Nf):
-        Faces[i] = Face._1D(Elements[i], Elements[i+1])
-
-    # Assemble elemental stiffness matrices
-    print "Calculating Elemental Stiffness..."
-    for elidx, el in enumerate(Elements):
-        K_el = el.stiffness_matrix()
-        F_el = el.load_vector(f)
-        for i in range(0, order+1):
-            glob_i = int(ConnectivityMatrix[elidx][i])
-            F[glob_i] += F_el[i]
-            for j in range(0, order+1):
-                glob_j = int(ConnectivityMatrix[elidx][j])
-                I[coo_idx] = glob_i 
-                J[coo_idx] = glob_j
-                K[coo_idx] = K_el[i,j]
-                coo_idx += 1
-
-    # Apply face fluxes
-    for faidx, fa in enumerate(Faces):
-        K_fa = fa.K()
-        GL = ConnectivityMatrix[faidx, :]
-        GR = ConnectivityMatrix[faidx+1, :]
-        SS = np.concatenate((GL, GR))
-        GL, GR = (SS, SS)
-        for i, gl_idx in enumerate(GL):
-            for j, gr_idx in enumerate(GR):
-                I[coo_idx] = gl_idx
-                J[coo_idx] = gr_idx
-                K[coo_idx] = K_fa[i, j]
-                coo_idx += 1
-
-    # Apply boundary conditions
-    lambda_left = lambda_right = 1
-    left_bc_idx = ConnectivityMatrix[0][0]
-    left_flux_idx = BoundaryFluxDOFs[0]
-    I[coo_idx] = left_bc_idx
-    J[coo_idx] = left_flux_idx
-    K[coo_idx] = -1
-    coo_idx += 1
-    I[coo_idx] = left_flux_idx
-    J[coo_idx] = left_bc_idx
-    K[coo_idx] = -lambda_left
-    coo_idx += 1
-    F[left_flux_idx] = -lambda_left*g0
-
-    right_bc_idx = ConnectivityMatrix[Ne-1][order]
-    right_flux_idx = BoundaryFluxDOFs[1]
-    I[coo_idx] = right_bc_idx
-    J[coo_idx] = right_flux_idx
-    K[coo_idx] = 1
-    coo_idx += 1
-    I[coo_idx] = right_flux_idx
-    J[coo_idx] = right_bc_idx
-    K[coo_idx] = lambda_right
-    coo_idx += 1
-    F[right_flux_idx] = lambda_right*g1
-
-    # Assemble global stiffness matrix and solve system
-    print "Assembling Global Stiffness..."
-    Kmat = sps.coo_matrix((K, (I, J)), shape=(Ndof, Ndof)).tocsc()
-    print Kmat.todense()    
-    print "Solving Matrix..."
-    v = spsolve(Kmat, F)
-
-    pylab.figure(figsize=(3,3))
-    pylab.plot(np.linspace(0,1,400), map(problem['analytic_solution'], np.linspace(0,1,400)), linewidth=4.0, color='orange')
-    for elidx, el in enumerate(Elements):
-        Xel,Yel = el.interpxy(v[ConnectivityMatrix[elidx,:]])
-        pylab.plot(Xel, Yel, linewidth=1.5)
-    print "Writing plots..."
-    pylab.savefig(problem['shortdesc']+"_dg.png")
-    L2e = map(lambda i: Elements[i].L2_error(v[ConnectivityMatrix[i, :]], problem['analytic_solution']), range(0, Ne))
-    H1e = map(lambda i: Elements[i].H1_error(v[ConnectivityMatrix[i, :]], problem['analytic_solution'], problem['grad_analytic_solution']), range(0, Ne))
-    print "L2 error", float(sum(L2e))
-    print "H1 error", float(sum(H1e))
-    print "Done."
+# save errors if we want to do something later
+pickle.dump(errors, open('dg_error_pickle.p', 'wb'))
 

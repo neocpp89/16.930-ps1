@@ -28,7 +28,7 @@ A couple of notes for the CG/CG+VMS cases:
 \item
 A couple of notes for the DG case:
 \begin{itemize}
-    \item I was not able to get this to work correctly if the problem was not pure diffusion, although it converges to the correct solution after many elements in all cases.
+    \item I was not able to get this to work correctly if the problem was not pure diffusion, although it converges to the correct solution after many elements in all cases except convection-diffusion with linear elements (the linear elements in general have a lot of trouble in this implementation of DG).
     \item With pure diffusion, the solution is visually indistinguishable from the CG case and errors are similar.
     \item There is probably an issue with the stabilization term (containing the face-lifting operator). If I increase the factor $\eta_f$ drastically (100-1000x), the solution becomes much more CG-like and converges to the exact solution as expected in all cases. I left this out of the current set of plots because it feels like cheating.
 \end{itemize}
@@ -57,13 +57,35 @@ A couple of notes for the DG case:
 \caption{$L_2$ and $H_1$ errors for the Reaction-Diffusion problem (CG and CG+VMS).}
 \end{figure}
 
+\begin{figure}[!h]
+\includegraphics[scale=1.0]{figs/dg_l2_error_Convection-Diffusion.png}
+\includegraphics[scale=1.0]{figs/dg_h1_error_Convection-Diffusion.png}
+\centering
+\caption{$L_2$ and $H_1$ errors for the Convection-Diffusion problem (DG).}
+\end{figure}
+
+\begin{figure}[!h]
+\includegraphics[scale=1.0]{figs/dg_l2_error_Poisson.png}
+\includegraphics[scale=1.0]{figs/dg_h1_error_Poisson.png}
+\centering
+\caption{$L_2$ and $H_1$ errors for the Poisson problem (DG).}
+\end{figure}
+
+\begin{figure}[!h]
+\includegraphics[scale=1.0]{figs/dg_l2_error_Reaction-Diffusion.png}
+\includegraphics[scale=1.0]{figs/dg_h1_error_Reaction-Diffusion.png}
+\centering
+\caption{$L_2$ and $H_1$ errors for the Reaction-Diffusion problem (DG).}
+\end{figure}
+
 \clearpage
 \section{Error Tables}
 
 \input{./cg_error_tables.tex}
+\input{./dg_error_tables.tex}
 
 \clearpage
 \appendix
-\section{Solution Plots}
+\section{Selected Solution Plots}
 
 \end{document}
