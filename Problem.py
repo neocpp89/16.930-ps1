@@ -249,4 +249,5 @@ for problem in problems:
     print r'\end{table}'
 
 # save errors if we want to do something later
-pickle.dump(errors, open('error_pickle.p', 'wb'))
+pickle.dump(errors, open('cg_error_pickle.p', 'wb'))
+

@@ -10,57 +10,8 @@
 \maketitle
 
 \section{Error Tables}
-\begin{table}
-\centering
-\caption{Poisson Equation: $L_2$ Error (CG methods)}
-\begin{tabular}{r | r r r r}
-Number of Elements & Linear & Linear with VMS & Cubic & Cubic with VMS \\
-\midrule
-\num{10} & \num{9.6144e-04} & \num{9.6144e-04} & \num{2.0998e-07} & \num{2.0998e-07} \\
-\num{20} & \num{3.4014e-04} & \num{3.4014e-04} & \num{1.8560e-08} & \num{1.8560e-08} \\
-\num{40} & \num{1.2028e-04} & \num{1.2028e-04} & \num{1.6405e-09} & \num{1.6405e-09} \\
-\num{80} & \num{4.2525e-05} & \num{4.2525e-05} & \num{1.4505e-10} & \num{1.4505e-10} \\
-\num{100} & \num{3.0429e-05} & \num{3.0429e-05} & \num{6.9767e-11} & \num{6.9767e-11} \\
-\num{160} & \num{1.5035e-05} & \num{1.5035e-05} & \num{5.2774e-11} & \num{5.2774e-11} \\
-\num{200} & \num{1.0758e-05} & \num{1.0758e-05} & \num{6.6640e-11} & \num{6.6640e-11} \\
-\num{320} & \num{5.3157e-06} & \num{5.3157e-06} & \num{1.2875e-10} & \num{1.2875e-10} \\
-\num{400} & \num{3.8036e-06} & \num{3.8036e-06} & \num{4.7281e-11} & \num{4.7281e-11} \\
-\end{tabular}
-\end{table}
-\begin{table}
-\centering
-\caption{Reaction-Diffusion Equation: $L_2$ Error (CG methods)}
-\begin{tabular}{r | r r r r}
-Number of Elements & Linear & Linear with VMS & Cubic & Cubic with VMS \\
-\midrule
-\num{10} & \num{1.7382e-01} & \num{1.7382e-01} & \num{2.5522e-02} & \num{2.5522e-02} \\
-\num{20} & \num{8.8233e-02} & \num{8.8233e-02} & \num{5.3403e-03} & \num{5.3403e-03} \\
-\num{40} & \num{3.1915e-02} & \num{3.1915e-02} & \num{6.7088e-04} & \num{6.7088e-04} \\
-\num{80} & \num{9.8221e-03} & \num{9.8221e-03} & \num{6.8474e-05} & \num{6.8474e-05} \\
-\num{100} & \num{6.8894e-03} & \num{6.8894e-03} & \num{3.1990e-05} & \num{3.1990e-05} \\
-\num{160} & \num{3.3400e-03} & \num{3.3400e-03} & \num{6.3142e-06} & \num{6.3142e-06} \\
-\num{200} & \num{2.3802e-03} & \num{2.3802e-03} & \num{2.9069e-06} & \num{2.9069e-06} \\
-\num{320} & \num{1.1711e-03} & \num{1.1711e-03} & \num{5.6430e-07} & \num{5.6430e-07} \\
-\num{400} & \num{8.3715e-04} & \num{8.3715e-04} & \num{2.5876e-07} & \num{2.5876e-07} \\
-\end{tabular}
-\end{table}
-\begin{table}
-\centering
-\caption{Convection-Diffusion Equation: $L_2$ Error (CG methods)}
-\begin{tabular}{r | r r r r}
-Number of Elements & Linear & Linear with VMS & Cubic & Cubic with VMS \\
-\midrule
-\num{10} & \num{4.5038e-01} & \num{1.4261e-01} & \num{3.4525e-02} & \num{1.3433e-01} \\
-\num{20} & \num{1.4116e-01} & \num{7.6188e-02} & \num{6.2825e-03} & \num{1.1891e-01} \\
-\num{40} & \num{3.7429e-02} & \num{3.2956e-02} & \num{7.1588e-04} & \num{1.0846e-02} \\
-\num{80} & \num{1.2058e-02} & \num{1.2452e-02} & \num{6.9532e-05} & \num{5.8611e-03} \\
-\num{100} & \num{8.2605e-03} & \num{8.9871e-03} & \num{3.2309e-05} & \num{4.3314e-03} \\
-\num{160} & \num{3.8479e-03} & \num{4.4828e-03} & \num{6.3390e-06} & \num{2.2111e-03} \\
-\num{200} & \num{2.7272e-03} & \num{3.2148e-03} & \num{2.9142e-06} & \num{1.5936e-03} \\
-\num{320} & \num{1.3326e-03} & \num{1.5923e-03} & \num{5.6486e-07} & \num{7.9349e-04} \\
-\num{400} & \num{9.5117e-04} & \num{1.1400e-03} & \num{2.5893e-07} & \num{5.6877e-04} \\
-\end{tabular}
-\end{table}
+\input{./cg_error_tables.tex}
+\clearpage
 
 \appendix
 \section{Solution Plots}
